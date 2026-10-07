@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>قالون · التوثيق والتنزيل</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0b0f19; --panel: #111827; --card: rgba(31,41,55,.4);
+    --text: #f3f4f6; --muted: #9ca3af; --accent: #2dd4bf; --accent-dim: rgba(45,212,191,.1);
+    --warn: #f59e0b; --border: rgba(255,255,255,.08);
+    --ui: 'Inter', sans-serif; --quran: 'Amiri', serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--ui); line-height: 1.75; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 2rem clamp(1rem,4vw,2.5rem) 4rem; }
+  nav { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 2rem; }
+  nav a, .btn { color: var(--accent); background: var(--accent-dim); border: 1px solid var(--border);
+    border-radius: 999px; padding: .35rem .9rem; text-decoration: none; font-size: .9rem; }
+  h1 { font-size: 1.6rem; margin-bottom: .4rem; }
+  h2 { font-size: 1.15rem; margin: 2.2rem 0 .7rem; color: var(--accent); }
+  p, li { color: var(--text); }
+  .sub { color: var(--muted); }
+  ul { padding-inline-start: 1.3rem; }
+  li { margin: .25rem 0; }
+  code { font-family: ui-monospace, Menlo, monospace; font-size: .86em; background: var(--card);
+    border: 1px solid var(--border); border-radius: 6px; padding: 0 .3rem; direction: ltr; unicode-bidi: embed; }
+  pre { direction: ltr; text-align: left; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem; overflow-x: auto; font-size: .82rem; line-height: 1.5; }
+  pre code { background: none; border: 0; padding: 0; }
+  table { width: 100%; border-collapse: collapse; margin: .6rem 0; font-size: .92rem; }
+  th, td { text-align: start; padding: .45rem .6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  .ltr { direction: ltr; text-align: left; }
+  .note { border-inline-start: 3px solid var(--warn); background: rgba(245,158,11,.08);
+    padding: .7rem 1rem; border-radius: 6px; margin: 1rem 0; }
+  .en { direction: ltr; text-align: left; color: var(--muted); font-size: .92rem; margin-top: .4rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a href="/">العارض</a>
+    <a href="/audio/">تنزيل التلاوات</a>
+    <a href="https://github.com/Jawad18750/qalun-timing/releases/latest">تنزيل التوقيتات</a>
+    <a href="https://github.com/Jawad18750/qalun-timing">المصدر والمساهمة</a>
+    <a href="/schemas/">المخطّطات (JSON Schema)</a>
+  </nav>
+
+  <h1>توقيتات تلاوات قالون: التوثيق والتنزيل</h1>
+  <p class="sub">توقيتات مفتوحة، كلمةً كلمة وآيةً آية، لختمات كاملة برواية قالون عن نافع، أكثرها لقرّاء ليبيين.
+  تشغّل التظليل مع التلاوة والتشغيل آيةً آية في تطبيقات مصحف الجماهيرية ومصاحف ليبيا وأذان وأذكار.</p>
+  <p class="en">Open word- and ayah-level timings for complete Qalun recitations. Everything below is also
+  in English in the <a href="https://github.com/Jawad18750/qalun-timing">repository</a>.</p>
+
+  <h2>ما في البيانات</h2>
+  <table>
+    <tr><th>القرّاء</th><td>16 بتوقيت الكلمات (11 ختمة ليبية مستضافة عندنا و5 من mp3quran.net)، و17 بتوقيت الآيات</td></tr>
+    <tr><th>ملفات السور</th><td>1,713 بتوقيت الكلمات، و1,711 بتوقيت الآيات</td></tr>
+    <tr><th>الكلمات الموقّتة</th><td>نحو 1.16 مليون</td></tr>
+    <tr><th>الترقيم</th><td>ترقيم مصحف الأوقاف الليبية برواية قالون: 6,214 آية، والبسملة ليست آية في أي سورة</td></tr>
+  </table>
+
+  <h2>التنزيل</h2>
+  <p>من <a href="https://github.com/Jawad18750/qalun-timing/releases/latest">آخر إصدار على GitHub</a>
+  (الرابط <code>releases/latest/download/&lt;الاسم&gt;</code> يعطي الأحدث دائماً):</p>
+  <table>
+    <tr><th class="ltr">qalun-timings-words.tar.gz</th><td>توقيت الكلمات لكل القرّاء</td></tr>
+    <tr><th class="ltr">words-&lt;reciter&gt;.tar.gz</th><td>توقيت الكلمات لقارئ واحد</td></tr>
+    <tr><th class="ltr">qalun-timings-ayahs.tar.gz</th><td>توقيت الآيات لكل القرّاء، بصيغة التطبيقات</td></tr>
+    <tr><th class="ltr">qalun-canon.tar.gz</th><td>النص المرجعي، ملف لكل سورة</td></tr>
+    <tr><th class="ltr">reciters.json</th><td>القرّاء والرواية ورابط صوت كل سورة والتغطية والمدة</td></tr>
+    <tr><th class="ltr">manifest.json</th><td>أرقام كل ملف: المقاطع والتغطية والثقة والفجوات والمدة</td></tr>
+    <tr><th class="ltr">SHA256SUMS · index.json</th><td>البصمات، وقائمة الملفات وتاريخ الإصدار</td></tr>
+  </table>
+  <p><b>التلاوات نفسها</b> تُنزَّل من <a href="/audio/">صفحة تنزيل التلاوات</a>: سورة أو مجموعة سور أو ختمة كاملة لكل قارئ،
+  مع ملفات توقيتها إن شئت، من الخادم الذي يستضيفها. والملفات الخام للتوقيت تُتصفّح هنا أيضاً:
+  <a href="/timing-data-nemo/">timing-data-nemo/</a> · <a href="/canon/">canon/</a> · <a href="/manifest.json">manifest.json</a>
+  · وتوقيت الآيات على <code class="ltr">https://quran-audio.abdeljawad.com/timings/&lt;reciter&gt;/ayahs.json</code>.</p>
+
+  <h2>الصيغ</h2>
+  <p>لكل ملف مخطّط JSON Schema في <a href="/schemas/">/schemas/</a>، مفحوص على كل ملف منشور،
+  والشرح الكامل في <a href="https://github.com/Jawad18750/qalun-timing/blob/main/docs/FORMATS.md">docs/FORMATS.md</a>.
+  الموضع <code>سورة:آية:كلمة</code>، كلها من 1، والبسملة والاستعاذة موضعهما <code>0:0:N</code>.</p>
+<pre><code>{"reciter": "abdulhamid_algriw", "surah": 1, …,
+ "segments": [{"segment": 3, "time_from": 13.08, "time_to": 18.28,
+   "ref_from": "1:1:1", "ref_to": "1:1:4", "confidence": 0.93, …,
+   "words": [{"word": "اِ۬لْحَمْدُ", "location": "1:1:1", "start": 0.0, "end": 0.8}, …]}]}</code></pre>
+  <p><b>انتبه قبل كتابة قارئ للملفات:</b></p>
+  <ul>
+    <li>بداية الكلمة ونهايتها <b>نسبيتان</b> إلى بداية مقطعها: المطلق = <code>time_from + start</code>.</li>
+    <li>مقاطع سدّ الفجوات (<code>filled_gap</code>) لها شكل آخر، بلا <code>segment</code> ولا <code>special_type</code> ولا <code>error</code>.</li>
+    <li>آخر كلمة في المقطع قد تتجاوز <code>time_to</code> بما يصل إلى ثانية ونصف، وهذا حقيقي فلا تقصّها.</li>
+    <li>الأزمنة مكمّمة بـ 0.08 ثانية، خطوة إطار الموديل.</li>
+    <li>قد توضع الكلمات نفسها مرتين (ذيل البسملة على الآية 2 من الفاتحة، آية أعادها القارئ): خذ قراءات الآية بترتيب التلاوة.</li>
+  </ul>
+  <p>توقيت الآيات بالملّي ثانية: <code>{"ayah": 1, "start_ms": 13080, "end_ms": 17080}</code>، لا تتداخل آيتان ولا تنتهي آية قبل أن تبدأ.</p>
+
+  <h2>كيف صُنعت</h2>
+  <p>موديل FastConformer CTC مدرَّب على التلاوة (<code>mohammed/fastconformer-quran-ar</code>، رخصة CC BY 4.0)
+  يتعرّف على الصوت في نوافذ، ومطابِق يجد السورة والآيات في نص قالون المرجعي، ثم محاذاة قسرية تضع كل كلمة،
+  ثم مرور ثانٍ يسدّ ما فات الأول، ثم تُطوى توقيتات الآيات من الكلمات.
+  الملخّص في <a href="https://github.com/Jawad18750/qalun-timing/blob/main/docs/PIPELINE.md">PIPELINE.md</a>،
+  والسجل الهندسي كاملاً بالعربية في <a href="https://github.com/Jawad18750/qalun-timing/blob/main/docs/PIPELINE.ar.md">PIPELINE.ar.md</a>.</p>
+
+  <h2>حدود معروفة</h2>
+  <ul>
+    <li>التغطية تقرير المحاذي عن نفسه لا قياس دقة: لا توجد بعد مجموعة موقّتة باليد.</li>
+    <li><b>البدايات متأخرة:</b> بداية الآية المسجّلة بعد أول صوت فيها بوسيط 110 ملّي ثانية (وقد تصل 350).
+    التطبيقات تبدأ التشغيل قبلها بـ 350 ملّي ثانية (لا قبل نهاية الآية السابقة) مع تدرّج في الصوت.
+    محاذٍ ببدايات دقيقة يُغني عن ذلك.</li>
+    <li>42 آية في توقيت الآيات بطول صفر: آيات لم يسمعها المحاذي بين جارتين متلاصقتين.</li>
+  </ul>
+
+  <h2>المساهمة</h2>
+  <p>مرحّب بكل مساهمة، بالعربية أو الإنجليزية، عبر <a href="https://github.com/Jawad18750/qalun-timing/issues">issues</a>
+  أو pull requests: توقيت خاطئ في كلمة أو آية، أو نتائج نموذج آخر (Zipformer، FastConformer آخر،
+  محاذٍ على مستوى الحروف) بنفس الصيغ والترقيم، أو سورة موقّتة باليد. التفاصيل في
+  <a href="https://github.com/Jawad18750/qalun-timing/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>
+  وخطة الانتقال إلى محاذاة الحروف وتشغيلها على GitHub Actions في
+  <a href="https://github.com/Jawad18750/qalun-timing/blob/main/docs/ROADMAP.md">ROADMAP.md</a>.</p>
+
+  <h2>الرخصة</h2>
+  <ul>
+    <li><b>التوقيتات</b>: <a href="https://creativecommons.org/licenses/by/4.0/deed.ar">CC BY 4.0</a>، مع النسبة إلى «عبد الجواد الميلادي، qalun-timing.abdeljawad.com».</li>
+    <li><b>نص القرآن</b> داخل الملفات: مصحف الأوقاف الليبية برواية قالون، بشروط تلك الطبعة (ذُكر أنها حرّة للاستعمال غير التجاري، والتجاري بإذن وزارة الأوقاف الليبية).</li>
+    <li><b>الصوت</b>: لأصحابه (المصدر مذكور لكل قارئ)، متاح للاستماع والدراسة والبحث مع التوقيتات، وإعادة نشره تحتاج إذن الناشر.</li>
+    <li><b>الشيفرة</b>: MIT.</li>
+  </ul>
+</div>
+</body>
+</html>

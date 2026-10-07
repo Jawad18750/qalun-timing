@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>تنزيل التلاوات</title>
+<meta name="description" content="تنزيل تلاوات قالون الموقّتة: سورة أو مجموعة سور أو ختمة كاملة، مع ملفات توقيتها." />
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0b0f19; --panel: #111827; --card: rgba(31,41,55,.4);
+    --text: #f3f4f6; --muted: #9ca3af; --accent: #2dd4bf; --accent-dim: rgba(45,212,191,.1);
+    --warn: #f59e0b; --bad: #f87171; --border: rgba(255,255,255,.08);
+    --ui: 'Inter', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--ui); line-height: 1.7; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 2rem clamp(1rem,4vw,2.5rem) 4rem; }
+  nav { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 2rem; }
+  nav a { color: var(--accent); background: var(--accent-dim); border: 1px solid var(--border);
+    border-radius: 999px; padding: .35rem .9rem; text-decoration: none; font-size: .9rem; }
+  nav a[aria-current] { background: var(--accent); color: var(--bg); }
+  h1 { font-size: 1.6rem; margin-bottom: .4rem; }
+  h2 { font-size: 1.15rem; margin: 2.2rem 0 .7rem; color: var(--accent); }
+  .sub { color: var(--muted); }
+  .en { direction: ltr; text-align: left; color: var(--muted); font-size: .92rem; margin-top: .4rem; }
+  .note { border-inline-start: 3px solid var(--warn); background: rgba(245,158,11,.08);
+    padding: .7rem 1rem; border-radius: 6px; margin: 1.2rem 0; font-size: .95rem; }
+  code { font-family: ui-monospace, Menlo, monospace; font-size: .86em; background: var(--card);
+    border: 1px solid var(--border); border-radius: 6px; padding: 0 .3rem; direction: ltr; unicode-bidi: embed; }
+  pre { direction: ltr; text-align: left; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: .8rem 1rem; overflow-x: auto; font-size: .82rem; line-height: 1.5; margin: .5rem 0; }
+  pre code { background: none; border: 0; padding: 0; }
+
+  .opts { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; margin: 1rem 0 1.4rem;
+    padding: .8rem 1rem; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; }
+  .opts label { display: inline-flex; gap: .45rem; align-items: center; cursor: pointer; }
+  .opts .mode { color: var(--muted); font-size: .9rem; margin-inline-start: auto; }
+  input[type=checkbox] { accent-color: var(--accent); width: 1rem; height: 1rem; }
+
+  .reciter { background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 1rem 1.1rem; margin: .8rem 0; }
+  .head { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; }
+  .who { flex: 1 1 260px; min-width: 0; }
+  .who b { font-size: 1.08rem; }
+  .meta { color: var(--muted); font-size: .86rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+  button { font: inherit; font-size: .9rem; cursor: pointer; border-radius: 999px; padding: .4rem 1rem;
+    border: 1px solid var(--border); background: var(--accent-dim); color: var(--accent); }
+  button.primary { background: var(--accent); color: var(--bg); font-weight: 600; border-color: transparent; }
+  button:disabled { opacity: .45; cursor: default; }
+  button:focus-visible, .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .picker { display: none; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+  .reciter.open .picker { display: block; }
+  .bar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .7rem; }
+  .bar .sel { color: var(--muted); font-size: .88rem; margin-inline-end: auto; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: .35rem; }
+  .chip { display: flex; gap: .4rem; align-items: baseline; text-align: start; border-radius: 8px;
+    padding: .3rem .55rem; font-size: .88rem; background: transparent; color: var(--text);
+    border: 1px solid var(--border); }
+  .chip .n { color: var(--muted); font-size: .78rem; min-width: 1.6rem; direction: ltr; }
+  .chip[aria-pressed=true] { background: var(--accent-dim); border-color: var(--accent); }
+  .chip:disabled { opacity: .3; }
+
+  .progress { display: none; margin-top: .9rem; }
+  .reciter.busy .progress { display: block; }
+  .track { height: 6px; background: var(--panel); border-radius: 99px; overflow: hidden; }
+  .fill { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+  .status { display: flex; flex-wrap: wrap; gap: .3rem 1rem; justify-content: space-between;
+    font-size: .85rem; color: var(--muted); margin-top: .35rem; }
+  .status .err { color: var(--bad); }
+  .loading { color: var(--muted); padding: 2rem 0; }
+  @media (max-width: 560px) {
+    .opts .mode { margin-inline-start: 0; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a href="/">العارض</a>
+    <a href="/docs/">التوثيق</a>
+    <a href="/audio/" aria-current="page">تنزيل التلاوات</a>
+    <a href="https://github.com/Jawad18750/qalun-timing/releases/latest">تنزيل التوقيتات</a>
+    <a href="https://github.com/Jawad18750/qalun-timing">المصدر والمساهمة</a>
+  </nav>
+
+  <h1>تنزيل التلاوات</h1>
+  <p class="sub">كل تلاوة وُقِّتت هنا، سورةً أو مجموعة سور أو ختمةً كاملة، ومعها ملفات توقيتها إن شئت.
+  الملفات تُنزَّل من الخادم الذي يستضيفها مباشرة: خادمنا للختمات الليبية، وmp3quran.net لتلاواته.</p>
+  <p class="en">Download the aligned recitations, one surah, a selection or a whole khatma, optionally with
+  their word and ayah timings. Files come straight from where each recording is hosted.</p>
+
+  <div class="note">التلاوات لأصحابها (المصدر مذكور تحت كل قارئ). هي متاحة هنا للاستماع والدراسة والبحث مع التوقيتات؛
+  وإعادة نشرها تحتاج إذن الناشر. التوقيتات نفسها <a href="https://creativecommons.org/licenses/by/4.0/deed.ar" style="color:var(--accent)">CC BY 4.0</a>.</div>
+
+  <div class="opts">
+    <label><input type="checkbox" id="withTimings" checked /> مع ملفات التوقيت (كلمةً كلمة لكل سورة، وملف الآيات)</label>
+    <span class="mode" id="mode"></span>
+  </div>
+
+  <div id="list" class="loading">جارٍ التحميل…</div>
+
+  <h2>من سطر الأوامر</h2>
+  <p>لكل قارئ زر «قائمة الروابط» يعطي ملف <code>urls.txt</code> بروابط ما اخترته (أو الختمة كلها)، ثم:</p>
+<pre><code># macOS / Linux: يكمل ما انقطع ويتخطّى الموجود
+wget -c -nc -i urls.txt
+
+# أو
+xargs -n 1 curl -fLO -C - &lt; urls.txt
+
+# Windows PowerShell
+Get-Content urls.txt | ForEach-Object { Invoke-WebRequest $_ -OutFile (Split-Path $_ -Leaf) }</code></pre>
+  <p class="sub">والقائمة كاملة بصيغة آلية في <a href="/audio/index.json" style="color:var(--accent)">/audio/index.json</a>:
+  لكل قارئ قالب رابط الصوت، وحجم كل سورة بالبايت، وروابط توقيتها.</p>
+</div>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const pad = n => String(n).padStart(3, '0');
+const fill = (tpl, s) => tpl.replace('{surah:03d}', pad(s));
+const canPickFolder = 'showDirectoryPicker' in window;
+const ZIP_LIMIT = 400e6; // in-memory zip ceiling for browsers that cannot write to a folder
+
+// wrapped in LRI…PDI so "835 MB" keeps its order inside Arabic text and parentheses
+function size(b) {
+  if (!b) return '';
+  const t = b >= 1e9 ? (b / 1e9).toFixed(2).replace(/\.?0+$/, '') + ' GB'
+    : b >= 1e6 ? Math.round(b / 1e6) + ' MB' : Math.max(1, Math.round(b / 1e3)) + ' KB';
+  return '\u2066' + t + '\u2069';
+}
+// Arabic counting: سورة واحدة، سورتان، 3 إلى 10 سور، 11 فأكثر سورة
+const surahCount = n => n === 1 ? 'سورة واحدة' : n === 2 ? 'سورتان' : `${n} ${n <= 10 ? 'سور' : 'سورة'}`;
+const fileCount = n => n === 1 ? 'ملف واحد' : n === 2 ? 'ملفان' : `${n} ${n <= 10 ? 'ملفات' : 'ملفاً'}`;
+const hours = s => s ? `${Math.round(s / 3600)} ساعة` : '';
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+let DATA, folder = null;
+
+$('#mode').textContent = canPickFolder
+  ? 'التنزيل إلى مجلد تختاره، ويكمل ما انقطع عند الإعادة'
+  : 'سورة واحدة ملفاً، وأكثر في ملف zip حتى 400 MB؛ وما فوقه بسطر الأوامر أو Chrome/Edge';
+
+fetch('/audio/index.json').then(r => r.json()).then(d => { DATA = d; render(); })
+  .catch(() => { $('#list').textContent = 'تعذّر تحميل القائمة.'; });
+
+function render() {
+  const list = $('#list');
+  list.className = '';
+  list.innerHTML = '';
+  for (const r of DATA.reciters) list.appendChild(card(r));
+}
+
+function card(r) {
+  const el = document.createElement('section');
+  el.className = 'reciter';
+  const available = new Set(Object.keys(r.files).map(Number));
+  const selected = new Set();
+  el.innerHTML = `
+    <div class="head">
+      <div class="who"><b>${esc(r.name)}</b>
+        <div class="meta">${esc(r.riwayah || '')} · ${available.size === 114 ? 'ختمة كاملة' : surahCount(available.size)}
+          · ${size(r.bytes)}${r.duration_s ? ' · ' + hours(r.duration_s) : ''} · المصدر: ${esc(r.source || '')}</div></div>
+      <div class="actions">
+        <button class="primary" data-act="all">${available.size === 114 ? 'الختمة كاملة' : 'كل السور'} (${size(r.bytes)})</button>
+        <button data-act="pick" aria-expanded="false">اختيار سور</button>
+        <button data-act="urls">قائمة الروابط</button>
+      </div>
+    </div>
+    <div class="picker">
+      <div class="bar"><span class="sel">لم يُختر شيء</span>
+        <button data-act="selall">تحديد الكل</button><button data-act="selnone">إلغاء التحديد</button>
+        <button class="primary" data-act="dlsel" disabled>تنزيل المحدد</button></div>
+      <div class="grid"></div>
+    </div>
+    <div class="progress"><div class="track"><div class="fill"></div></div>
+      <div class="status"><span class="what"></span><span class="how"></span>
+        <button data-act="stop">إيقاف</button></div></div>`;
+
+  const grid = $('.grid', el);
+  DATA.surahs.forEach((name, i) => {
+    const s = i + 1, b = document.createElement('button');
+    b.className = 'chip';
+    b.disabled = !available.has(s);
+    b.setAttribute('aria-pressed', 'false');
+    b.title = available.has(s) ? size(r.files[s]) : 'غير متوفرة لهذا القارئ';
+    b.innerHTML = `<span class="n">${s}</span><span>${esc(name)}</span>`;
+    b.onclick = () => {
+      selected.has(s) ? selected.delete(s) : selected.add(s);
+      b.setAttribute('aria-pressed', selected.has(s));
+      sync();
+    };
+    grid.appendChild(b);
+  });
+
+  function sync() {
+    const n = selected.size, bytes = [...selected].reduce((t, s) => t + (r.files[s] || 0), 0);
+    $('.sel', el).textContent = n ? `${surahCount(n)} · ${size(bytes)}` : 'لم يُختر شيء';
+    $('[data-act=dlsel]', el).disabled = !n || el.classList.contains('busy');
+    $('[data-act=urls]', el).textContent = n ? `قائمة روابط المحدد (${n})` : 'قائمة الروابط';
+  }
+  function setAll(on) {
+    selected.clear();
+    if (on) available.forEach(s => selected.add(s));
+    grid.querySelectorAll('.chip').forEach((b, i) => b.setAttribute('aria-pressed', selected.has(i + 1)));
+    sync();
+  }
+  const surahs = () => (selected.size ? [...selected] : [...available]).sort((a, b) => a - b);
+
+  el.addEventListener('click', e => {
+    const act = e.target.closest('button')?.dataset.act;
+    if (act === 'pick') {
+      const open = el.classList.toggle('open');
+      e.target.setAttribute('aria-expanded', open);
+    } else if (act === 'selall') setAll(true);
+    else if (act === 'selnone') setAll(false);
+    else if (act === 'all') download(r, [...available].sort((a, b) => a - b), el, sync);
+    else if (act === 'dlsel') download(r, [...selected].sort((a, b) => a - b), el, sync);
+    else if (act === 'urls') saveUrls(r, surahs());
+    else if (act === 'stop') el._abort?.abort();
+  });
+  return el;
+}
+
+function jobsFor(r, surahs) {
+  const timings = $('#withTimings').checked;
+  const jobs = surahs.map(s => ({ url: fill(r.audio, s), name: `${pad(s)}.mp3`, bytes: r.files[s] || 0 }));
+  if (timings) {
+    for (const s of surahs) jobs.push({ url: fill(r.words, s), name: `${pad(s)}.words.json`, bytes: 0 });
+    if (r.ayahs) jobs.push({ url: r.ayahs, name: 'ayahs.json', bytes: 0 });
+  }
+  return jobs;
+}
+
+function saveUrls(r, surahs) {
+  const text = jobsFor(r, surahs).map(j => j.url).join('\n') + '\n';
+  saveBlob(new Blob([text], { type: 'text/plain' }), `${r.id}-urls.txt`);
+}
+
+function saveBlob(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+}
+
+async function download(r, surahs, el, sync) {
+  if (!surahs.length || el.classList.contains('busy')) return;
+  const jobs = jobsFor(r, surahs);
+  const total = jobs.reduce((t, j) => t + j.bytes, 0);
+  const ui = { fill: $('.fill', el), what: $('.what', el), how: $('.how', el) };
+  ui.what.className = 'what';
+
+  let dir = null;
+  if (canPickFolder) {
+    try {
+      folder = folder || await window.showDirectoryPicker({ id: 'qalun-audio', mode: 'readwrite' });
+      dir = await folder.getDirectoryHandle(r.name.replace(/[\\/:*?"<>|]/g, '') || r.id, { create: true });
+    } catch (e) { return; } // the reader closed the picker
+  } else if (jobs.length > 1 && total > ZIP_LIMIT) {
+    ui.what.textContent = '';
+    alert(`المحدد ${size(total)}، أكبر من أن يُجمع في ملف واحد في هذا المتصفح.\n` +
+      'نزّله من Chrome أو Edge (إلى مجلد مباشرة)، أو اختر سوراً أقل، أو استعمل «قائمة الروابط» مع wget.');
+    return;
+  }
+
+  const ctl = new AbortController();
+  el._abort = ctl;
+  el.classList.add('busy');
+  sync();
+  let done = 0, skipped = 0, failed = [];
+  const show = (name) => {
+    ui.fill.style.width = total ? Math.min(100, done / total * 100) + '%' : '0';
+    ui.how.textContent = total ? `${size(done)} من ${size(total)}` : '';
+    if (name) ui.what.textContent = name;
+  };
+
+  const zipFiles = [];
+  try {
+    if (dir) {
+      // two at a time: fast enough, and gentle on the hosts
+      let next = 0;
+      const worker = async () => {
+        while (next < jobs.length && !ctl.signal.aborted) {
+          const j = jobs[next++];
+          show(`${j.name} · ${next} من ${jobs.length}`);
+          try {
+            if (j.bytes && await existing(dir, j.name) === j.bytes) { done += j.bytes; skipped++; continue; }
+            const res = await fetch(j.url, { signal: ctl.signal });
+            if (!res.ok) throw new Error(res.status);
+            const fh = await dir.getFileHandle(j.name, { create: true });
+            const out = await fh.createWritable();
+            await res.body.pipeThrough(counter(n => { done += n; show(); })).pipeTo(out, { signal: ctl.signal });
+          } catch (e) {
+            if (ctl.signal.aborted) break;
+            failed.push(j.name);
+          }
+        }
+      };
+      await Promise.all([worker(), worker()]);
+    } else {
+      for (const [i, j] of jobs.entries()) {
+        if (ctl.signal.aborted) break;
+        show(`${j.name} · ${i + 1} من ${jobs.length}`);
+        try {
+          const res = await fetch(j.url, { signal: ctl.signal });
+          if (!res.ok) throw new Error(res.status);
+          const blob = await new Response(res.body.pipeThrough(counter(n => { done += n; show(); }))).blob();
+          if (jobs.length === 1) saveBlob(blob, `${r.id}-${j.name}`);
+          else zipFiles.push({ name: j.name, data: blob });
+        } catch (e) {
+          if (ctl.signal.aborted) break;
+          failed.push(j.name);
+        }
+      }
+      if (zipFiles.length && !ctl.signal.aborted) {
+        ui.what.textContent = 'تجميع الملف…';
+        const { downloadZip } = await import('https://cdn.jsdelivr.net/npm/client-zip@2.4.5/index.js');
+        const blob = await downloadZip(zipFiles.map(f => ({ name: `${r.id}/${f.name}`, input: f.data }))).blob();
+        saveBlob(blob, `${r.id}.zip`);
+      }
+    }
+  } finally {
+    el.classList.remove('busy');
+    el._abort = null;
+    sync();
+  }
+  // the bar stays visible with the outcome until the next download
+  el.classList.add('busy');
+  $('[data-act=stop]', el).hidden = true;
+  setTimeout(() => { el.classList.remove('busy'); $('[data-act=stop]', el).hidden = false; }, 15000);
+  if (ctl.signal.aborted) ui.what.textContent = 'أُوقف التنزيل. أعده متى شئت فيكمل من حيث توقّف.';
+  else if (failed.length) {
+    ui.what.className = 'what err';
+    ui.what.textContent = `لم يُنزَّل ${failed.length}: ${failed.slice(0, 6).join('، ')}${failed.length > 6 ? '…' : ''}. أعد التنزيل لإكمالها.`;
+  } else {
+    ui.what.textContent = dir
+      ? `اكتمل: ${fileCount(jobs.length - skipped)}${skipped ? `، و${fileCount(skipped)} كانت موجودة` : ''}، في مجلد «${dir.name}».`
+      : 'اكتمل.';
+  }
+}
+
+async function existing(dir, name) {
+  try { return (await (await dir.getFileHandle(name)).getFile()).size; } catch { return -1; }
+}
+
+function counter(onChunk) {
+  return new TransformStream({ transform(chunk, c) { onChunk(chunk.byteLength); c.enqueue(chunk); } });
+}
+</script>
+</body>
+</html>

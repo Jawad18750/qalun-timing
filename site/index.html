@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>قالون · بيانات التوقيت</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0b0f19; --panel: #111827; --card: rgba(31,41,55,.4);
+    --text: #f3f4f6; --muted: #9ca3af; --dim: rgba(243,244,246,.22);
+    --accent: #2dd4bf; --accent-glow: rgba(45,212,191,.4); --accent-dim: rgba(45,212,191,.1);
+    --warn: #f59e0b; --warn-dim: rgba(245,158,11,.12);
+    --bad: #ef4444; --bad-dim: rgba(239,68,68,.12);
+    --border: rgba(255,255,255,.08);
+    --ui: 'Inter', sans-serif; --quran: 'Amiri', serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--ui); min-height: 100vh; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .wrap { padding: 2rem clamp(1rem,4vw,3rem); max-width: 1400px; margin: 0 auto; }
+  header.top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+  header.top h1 { font-size: 1.45rem; font-weight: 700; display: flex; align-items: center; gap: .6rem; }
+  header.top .sub { color: var(--muted); font-size: .84rem; margin-top: .15rem; }
+  .note { font-size: .78rem; color: var(--muted); }
+  .note b { color: var(--accent); }
+  .back-btn { display: inline-flex; align-items: center; gap: .4rem; color: var(--accent); background: none; border: none; font-family: var(--ui); font-size: .88rem; cursor: pointer; padding: 0; margin-bottom: .9rem; }
+  .back-btn:hover { text-decoration: underline; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: .75rem; margin-bottom: 1.5rem; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.1rem; }
+  .stat-card .val { font-size: 1.55rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat-card .lbl { font-size: .76rem; color: var(--muted); margin-top: .2rem; }
+
+  /* reciter cards */
+  .reciter-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 1rem; }
+  .reciter-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.2rem 1.3rem; cursor: pointer; transition: all .2s; }
+  .reciter-card:hover { background: rgba(255,255,255,.06); border-color: rgba(45,212,191,.3); transform: translateY(-2px); }
+  .reciter-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: .15rem; }
+  .reciter-card .slug { font-size: .74rem; color: var(--muted); direction: ltr; text-align: right; margin-bottom: .9rem; }
+  .rc-row { display: flex; justify-content: space-between; font-size: .8rem; color: var(--muted); margin-top: .35rem; }
+  .rc-row b { color: var(--text); font-variant-numeric: tabular-nums; font-weight: 600; }
+  .bar { height: 6px; background: rgba(255,255,255,.08); border-radius: 3px; overflow: hidden; margin-top: .85rem; }
+  .bar > i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+  .flag { display: inline-block; margin-top: .7rem; font-size: .72rem; padding: .18rem .5rem; border-radius: 999px; background: var(--bad-dim); color: var(--bad); font-weight: 600; }
+
+  .toolbar { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
+  .toolbar select, .toolbar input { background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: .55rem .8rem; font-family: var(--ui); font-size: .85rem; }
+  .toolbar input { flex: 1; min-width: 160px; }
+
+  table.grid { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  table.grid th, table.grid td { padding: .65rem .9rem; text-align: right; font-size: .85rem; border-bottom: 1px solid var(--border); }
+  table.grid th { color: var(--muted); font-weight: 600; font-size: .74rem; letter-spacing: .04em; position: sticky; top: 0; background: #141b2c; }
+  table.grid tbody tr { cursor: pointer; transition: background .15s; }
+  table.grid tbody tr:hover { background: rgba(255,255,255,.04); }
+  table.grid tbody tr:last-child td { border-bottom: none; }
+  .badge { display: inline-block; padding: .2rem .55rem; border-radius: 999px; font-size: .72rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .badge.good { background: var(--accent-dim); color: var(--accent); }
+  .badge.warn { background: var(--warn-dim); color: var(--warn); }
+  .badge.bad { background: var(--bad-dim); color: var(--bad); }
+  .badge.pending { background: rgba(255,255,255,.06); color: var(--muted); }
+  .badge.alt { background: var(--warn-dim); color: var(--warn); }
+  .badge.eng { background: rgba(120,170,255,.14); color: #8ab4ff; }
+  .badge.eng-onnx { background: rgba(255,255,255,.07); color: var(--muted); }
+  .cmp { font-size: .72rem; color: var(--muted); }
+  .cmp.up { color: var(--accent); }
+  .cmp.down { color: var(--bad); }
+  .flag.alt { background: var(--warn-dim); color: var(--warn); }
+  .mono { font-variant-numeric: tabular-nums; color: var(--muted); }
+  tr.row-failed { opacity: .6; }
+  .empty-note { padding: 3rem 1rem; text-align: center; color: var(--muted); }
+
+  /* ---------- player ---------- */
+  #playerView.active { display: flex; height: 100vh; overflow: hidden; }
+  #sidebar { width: 340px; background: var(--panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 10; box-shadow: -4px 0 15px rgba(0,0,0,.2); }
+  .sb-head { padding: 1.15rem 1.25rem .9rem; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: .6rem; }
+  .sb-head h2 { font-size: 1.02rem; font-weight: 700; }
+  .sb-head .meta { font-size: .77rem; color: var(--muted); line-height: 1.5; }
+  .mismatch-warn { background: var(--bad-dim); color: var(--bad); border: 1px solid rgba(239,68,68,.3); border-radius: 10px; padding: .5rem .7rem; font-size: .76rem; line-height: 1.5; }
+  .ayah-list { flex-grow: 1; overflow-y: auto; padding: .85rem; display: flex; flex-direction: column; gap: .4rem; }
+  .ayah-item { padding: .6rem .8rem; border-radius: 10px; cursor: pointer; border: 1px solid transparent; background: rgba(255,255,255,.02); transition: all .18s; }
+  .ayah-item:hover { background: rgba(255,255,255,.06); }
+  .ayah-item.active { background: var(--accent-dim); border-color: rgba(45,212,191,.3); }
+  .ayah-item .t { display: flex; justify-content: space-between; align-items: center; font-size: .82rem; font-weight: 600; }
+  .ayah-item .cov { font-size: .72rem; font-variant-numeric: tabular-nums; }
+  .cov.full { color: var(--accent); } .cov.part { color: var(--warn); } .cov.none { color: var(--bad); }
+  .sb-player { padding: 1.1rem 1.25rem; border-top: 1px solid var(--border); background: rgba(0,0,0,.2); display: flex; flex-direction: column; gap: .9rem; }
+  .tl { display: flex; align-items: center; gap: .75rem; font-size: .76rem; color: var(--muted); font-variant-numeric: tabular-nums; direction: ltr; }
+  .pbar { flex-grow: 1; height: 6px; background: rgba(255,255,255,.1); border-radius: 3px; cursor: pointer; overflow: hidden; }
+  .pbar > i { display: block; height: 100%; background: var(--accent); width: 0%; box-shadow: 0 0 10px var(--accent-glow); }
+  .ctrls { display: flex; justify-content: center; align-items: center; gap: .7rem; }
+  .play { background: var(--accent); border: none; color: #000; width: 46px; height: 46px; border-radius: 50%; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+  .play:hover { transform: scale(1.08); background: #34eed6; }
+  .spd { background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--muted); border-radius: 10px; padding: .4rem .65rem; font-size: .76rem; cursor: pointer; font-family: var(--ui); }
+
+  #main { flex-grow: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center,#0f1524 0%,#0b0f19 100%); }
+  #legend { padding: .6rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; gap: 1.1rem; font-size: .74rem; color: var(--muted); flex-wrap: wrap; }
+  #legend span { display: inline-flex; align-items: center; gap: .35rem; }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  #reader { flex-grow: 1; overflow-y: auto; padding: 8vh 9% 36vh; scroll-behavior: smooth; }
+  .ayah-block { margin-bottom: 2.4rem; opacity: .38; transition: opacity .45s ease; }
+  .ayah-block.active { opacity: 1; }
+  .ayah-block .num { font-family: var(--ui); font-size: .72rem; color: var(--muted); margin-bottom: .35rem; direction: ltr; text-align: right; }
+  .ayah-text { font-family: var(--quran); font-size: 2.5rem; line-height: 2.05; text-align: right; direction: rtl; }
+  .w { display: inline-block; padding: 0 .15em; margin-bottom: .45em; color: var(--dim); transition: color .12s ease; cursor: pointer; border-radius: 6px; }
+  .w.timed:hover { color: var(--text); }
+  .w.on { color: var(--accent); }
+  /* a canonical word the aligner never matched: shown (it is real text) but marked */
+  .w.untimed { color: #ef8888; border-bottom: 2px dotted rgba(239,68,68,.45); cursor: not-allowed; }
+  .w.ornament { color: var(--muted); opacity: .55; cursor: default; }
+  .ayah-toggle { display: none; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 900px) {
+    .reciter-grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+  }
+
+  @media (max-width: 768px) {
+    body { overflow-x: hidden; }
+    .wrap { padding: 1.1rem .9rem 2rem; }
+    header.top { gap: .5rem; margin-bottom: 1rem; }
+    header.top h1 { font-size: 1.15rem; }
+    header.top .sub { font-size: .76rem; }
+    .note { font-size: .72rem; }
+    .stats-row { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: .5rem; margin-bottom: 1.1rem; }
+    .stat-card { padding: .7rem .8rem; border-radius: 12px; }
+    .stat-card .val { font-size: 1.2rem; }
+    .stat-card .lbl { font-size: .7rem; }
+    .reciter-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: .7rem; }
+    .reciter-card { padding: 1rem; }
+    .toolbar { gap: .45rem; }
+    .toolbar select, .toolbar input { flex: 1 1 100%; font-size: .82rem; }
+
+    /* player: reader fills the screen, transport pinned, ayah list on demand */
+    #playerView.active { flex-direction: column; height: 100dvh; }
+    #sidebar {
+      width: 100%; flex: 0 0 auto; border-left: none;
+      border-bottom: 1px solid var(--border); box-shadow: none;
+    }
+    .sb-head { padding: .8rem .9rem .7rem; gap: .45rem; }
+    .sb-head h2 { font-size: .95rem; }
+    .sb-head .meta { font-size: .72rem; }
+    .mismatch-warn { font-size: .72rem; padding: .45rem .6rem; }
+    .ayah-toggle {
+      display: block; width: 100%; background: rgba(255,255,255,.05);
+      border: 1px solid var(--border); color: var(--text); border-radius: 10px;
+      padding: .5rem; font-family: var(--ui); font-size: .8rem; cursor: pointer;
+    }
+    .ayah-list { display: none; max-height: 42dvh; padding: .6rem .9rem; }
+    .ayah-list.open { display: flex; }
+    #main { flex: 1 1 auto; min-height: 0; }
+    #legend { padding: .5rem .9rem; gap: .7rem; font-size: .68rem; }
+    #reader { padding: 1.2rem 1rem 9rem; }
+    .ayah-block { margin-bottom: 1.6rem; }
+    .ayah-text { font-size: 1.65rem; line-height: 1.95; }
+    .sb-player {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+      background: var(--panel); border-top: 1px solid var(--border);
+      padding: .7rem .9rem calc(.7rem + env(safe-area-inset-bottom));
+      gap: .55rem;
+    }
+    .play { width: 42px; height: 42px; }
+  }
+
+  /* six columns fit a tablet fine; only phones need the card layout */
+  @media (max-width: 600px) {
+    div[style*="max-height:62vh"] { max-height: none !important; overflow: visible !important; }
+    table.grid { border: none; background: none; }
+    table.grid thead { display: none; }
+    table.grid tbody, table.grid tr, table.grid td { display: block; width: 100%; }
+    table.grid tr {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: .75rem .9rem; margin-bottom: .6rem;
+    }
+    table.grid td { border: none; padding: .18rem 0; font-size: .82rem; }
+    table.grid td[data-l="السورة"] { font-size: .95rem; font-weight: 600; margin-bottom: .3rem; }
+    table.grid td[data-l]:not([data-l="السورة"]):not([data-l="الحالة"])::before {
+      content: attr(data-l) ": "; color: var(--muted); font-size: .72rem;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .ayah-text { font-size: 1.45rem; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ============ VIEW 1: reciters ============ -->
+<div class="view active" id="recitersView"><div class="wrap">
+  <header class="top">
+    <div>
+      <h1>📖 قالون · بيانات التوقيت</h1>
+      <div class="sub">Qalun ayah/word timing dataset, live from the batch pipeline</div>
+      <div class="sub" style="margin-top:.45rem;display:flex;gap:.5rem;flex-wrap:wrap">
+        <a href="/docs/" style="color:var(--accent)">التوثيق · Docs</a> ·
+        <a href="/audio/" style="color:var(--accent)">تنزيل التلاوات · Audio</a> ·
+        <a href="https://github.com/Jawad18750/qalun-timing/releases/latest" style="color:var(--accent)">تنزيل التوقيتات · Timings</a> ·
+        <a href="https://github.com/Jawad18750/qalun-timing" style="color:var(--accent)">المصدر والمساهمة · GitHub</a> ·
+        <a href="/schemas/" style="color:var(--accent)">JSON Schema</a>
+      </div>
+    </div>
+    <div class="note">آخر تحديث: <b id="lastUpdated">—</b> · يتحدّث تلقائياً كل ٢٠ ثانية</div>
+  </header>
+  <div class="stats-row" id="globalStats"></div>
+  <h2 style="font-size:1rem;font-weight:600;margin-bottom:.9rem;color:var(--muted)">القرّاء</h2>
+  <div class="reciter-grid" id="reciterGrid"></div>
+</div></div>
+
+<!-- ============ VIEW 2: one reciter's surahs ============ -->
+<div class="view" id="surahsView"><div class="wrap">
+  <button class="back-btn" id="toReciters">← كل القرّاء</button>
+  <header class="top">
+    <div>
+      <h1 id="reciterTitle">—</h1>
+      <div class="sub" id="reciterSub">—</div>
+    </div>
+  </header>
+  <div class="stats-row" id="reciterStats"></div>
+  <div class="toolbar">
+    <select id="statusFilter">
+      <option value="">كل الحالات</option>
+      <option value="good">تغطية جيدة</option>
+      <option value="warn">تغطية متوسطة</option>
+      <option value="bad">تغطية ضعيفة</option>
+      <option value="mismatch">سورة غير مطابقة للاسم</option>
+      <option value="failed">فشل</option>
+    </select>
+    <input id="searchBox" type="text" placeholder="ابحث برقم أو اسم السورة…" />
+  </div>
+  <div style="overflow:auto;max-height:62vh;border-radius:14px;">
+    <table class="grid">
+      <thead><tr>
+        <th>السورة</th><th>الحالة</th><th>تغطية الكلمات</th>
+        <th>الآيات</th><th>فجوة صوتية</th><th>الثقة</th>
+      </tr></thead>
+      <tbody id="surahBody"></tbody>
+    </table>
+  </div>
+</div></div>
+
+<!-- ============ VIEW 3: player ============ -->
+<div class="view" id="playerView">
+  <aside id="sidebar">
+    <div class="sb-head">
+      <button class="back-btn" id="toSurahs" style="margin:0">← سور القارئ</button>
+      <h2 id="pTitle">—</h2>
+      <div class="meta" id="pMeta">—</div>
+      <div class="mismatch-warn" id="pMismatch" style="display:none"></div>
+      <button class="ayah-toggle" id="ayahToggle" aria-expanded="false">قائمة الآيات ▾</button>
+    </div>
+    <div class="ayah-list" id="ayahList"></div>
+    <div class="sb-player">
+      <div class="tl">
+        <span id="cur">0:00</span>
+        <div class="pbar" id="pbar"><i id="pfill"></i></div>
+        <span id="dur">0:00</span>
+      </div>
+      <div class="ctrls">
+        <button class="spd" id="spd">1x</button>
+        <button class="play" id="play">▶</button>
+      </div>
+    </div>
+  </aside>
+  <main id="main">
+    <audio id="audio"></audio>
+    <div id="legend">
+      <span><i class="swatch" style="background:var(--accent)"></i> الكلمة الجارية</span>
+      <span><i class="swatch" style="background:var(--dim)"></i> مطابَقة (لها توقيت)</span>
+      <span><i class="swatch" style="background:#ef8888"></i> لم يطابقها المحاذي (النص كامل من المصحف)</span>
+    </div>
+    <div id="reader"></div>
+  </main>
+</div>
+
+<script>
+const MANIFEST_URL = 'manifest.json';
+const CANON_BASE = 'canon';
+let entries = [], timer = null, currentReciter = null;
+
+// A row carries the winning engine's numbers plus the other's under `alt`.
+// pick() re-resolves it so the whole page can be read through either engine;
+// fields the alt does not carry (names, audio) fall through to the base row.
+const CMP_FIELDS = ['source','word_coverage','avg_confidence','gap_pct','chunk_window'];
+const snapshot = o => CMP_FIELDS.reduce((r,k)=>(r[k]=o[k],r), {});
+function pick(e, mode){
+  mode = mode || (document.getElementById('srcFilter')||{}).value || 'best';
+  const alt = e.alt || [];
+  if (mode === 'best' || e.source === mode) {
+    const other = alt.find(a => a.source !== e.source);
+    return other ? Object.assign({}, e, {_other: snapshot(other)}) : e;
+  }
+  const a = alt.find(x => x.source === mode);
+  // carry the displaced engine's numbers so the row can still be compared
+  return a ? Object.assign({}, e, a, {_other: snapshot(e)}) : null;
+}
+function viewList(list, mode){
+  return list.map(e => pick(e, mode)).filter(Boolean);
+}
+const fmt = s => (isNaN(s)||s==null) ? '0:00' : `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+
+function covClass(e){
+  if (e.failed) return 'bad';
+  if (e.word_coverage === undefined) return 'pending';
+  if (e.word_coverage >= 95) return 'good';
+  if (e.word_coverage >= 85) return 'warn';
+  return 'bad';
+}
+
+async function loadManifest(){
+  try{
+    const r = await fetch(MANIFEST_URL + '?t=' + Date.now());
+    entries = (await r.json()).entries || [];
+    document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString('ar-LY');
+    renderGlobal(); renderReciters();
+    if (currentReciter && document.getElementById('surahsView').classList.contains('active')) renderSurahs();
+  }catch(e){ console.error('manifest', e); }
+}
+
+function byReciter(){
+  const m = new Map();
+  viewList(entries).forEach(e => { if(!m.has(e.reciter)) m.set(e.reciter, []); m.get(e.reciter).push(e); });
+  return m;
+}
+
+function agg(list){
+  const done = list.filter(e => !e.failed && e.word_coverage !== undefined);
+  const failed = list.filter(e => e.failed).length;
+  const mism = list.filter(e => e.surah_mismatch).length;
+  const alt = list.filter(e => e.alternate_source).length;
+  const wc = done.reduce((a,e)=>a+(e.words_covered||0),0);
+  const wt = done.reduce((a,e)=>a+(e.total_words||0),0);
+  const conf = done.length ? done.reduce((a,e)=>a+(e.avg_confidence||0),0)/done.length : 0;
+  return { done: done.length, failed, mism, alt, wc, wt,
+           cov: wt ? 100*wc/wt : 0, conf: conf*100, total: list.length };
+}
+
+function renderGlobal(){
+  const a = agg(viewList(entries));
+  const cards = [
+    [byReciter().size, 'قارئ'],
+    [a.done, 'سورة مكتملة'],
+    [a.cov.toFixed(1)+'%', 'تغطية الكلمات'],
+    [a.conf.toFixed(0)+'%', 'متوسط الثقة'],
+    [a.wc.toLocaleString('en'), 'كلمة موقّتة'],
+    [a.mism, 'ملف باسم سورة خاطئ'],
+  ];
+  document.getElementById('globalStats').innerHTML = cards.map(([v,l])=>
+    `<div class="stat-card"><div class="val">${v}</div><div class="lbl">${l}</div></div>`).join('');
+}
+
+function renderReciters(){
+  const grid = document.getElementById('reciterGrid');
+  const m = byReciter();
+  grid.innerHTML = [...m.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([slug,list])=>{
+    const a = agg(list);
+    return `<div class="reciter-card" data-r="${slug}">
+      <h3>${slug.replace(/_/g,' ')}</h3>
+      <div class="slug">${slug}</div>
+      <div class="rc-row"><span>سور مكتملة</span><b>${a.done} / 114</b></div>
+      <div class="rc-row"><span>تغطية الكلمات</span><b>${a.cov.toFixed(1)}%</b></div>
+      <div class="rc-row"><span>متوسط الثقة</span><b>${a.conf.toFixed(0)}%</b></div>
+      <div class="bar"><i style="width:${Math.min(100,a.done/114*100)}%"></i></div>
+      ${a.mism ? `<span class="flag">${a.mism} ملف باسم سورة خاطئ</span>`:''}
+      ${a.failed ? `<span class="flag">${a.failed} فشل</span>`:''}
+      ${a.alt ? `<span class="flag alt">${a.alt} من مصدر مختلف</span>`:''}
+    </div>`;
+  }).join('');
+  grid.querySelectorAll('.reciter-card').forEach(c =>
+    c.addEventListener('click', ()=> openReciter(c.dataset.r)));
+}
+
+function show(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active'); }
+
+function openReciter(slug){
+  currentReciter = slug;
+  document.getElementById('reciterTitle').textContent = slug.replace(/_/g,' ');
+  document.getElementById('reciterSub').textContent = slug;
+  renderSurahs(); show('surahsView'); window.scrollTo(0,0);
+}
+
+// the other engine's coverage, so a row that regressed is visible in place
+function cmpCell(e){
+  const other = e._other;
+  if (!other || other.word_coverage === undefined || e.word_coverage === undefined) return '';
+  const d = +(e.word_coverage - other.word_coverage).toFixed(1);
+  const cls = d > 0.5 ? 'up' : (d < -0.5 ? 'down' : '');
+  const nm = other.source === 'nemo' ? 'NeMo' : 'ONNX';
+  return `<div class="cmp ${cls}">${nm} ${other.word_coverage}% (${d>0?'+':''}${d})</div>`;
+}
+
+function renderSurahs(){
+  const list = entries.filter(e => e.reciter === currentReciter);
+  const a = agg(viewList(list));
+  document.getElementById('reciterStats').innerHTML = [
+    [a.done+' / 114','سور مكتملة'],
+    [a.cov.toFixed(1)+'%','تغطية الكلمات'],
+    [a.conf.toFixed(0)+'%','متوسط الثقة'],
+    [a.mism,'اسم سورة خاطئ'],
+    [a.failed,'فشل'],
+  ].map(([v,l])=>`<div class="stat-card"><div class="val">${v}</div><div class="lbl">${l}</div></div>`).join('');
+
+  const sf = document.getElementById('statusFilter').value;
+  const q = document.getElementById('searchBox').value.trim();
+  let rows = viewList(list).filter(e=>{
+    if (sf === 'mismatch' && !e.surah_mismatch) return false;
+    if (sf === 'failed' && !e.failed) return false;
+    if (['good','warn','bad'].includes(sf) && covClass(e)!==sf) return false;
+    if (q && !(String(e.surah).includes(q) || (e.surah_name||'').includes(q))) return false;
+    return true;
+  }).sort((x,y)=>x.surah-y.surah);
+
+  const body = document.getElementById('surahBody');
+  if(!rows.length){ body.innerHTML = '<tr><td colspan="6"><div class="empty-note">لا توجد نتائج</div></td></tr>'; return; }
+  body.innerHTML = rows.map(e=>{
+    const c = covClass(e);
+    const label = e.failed ? 'فشل' : c==='good'?'جيدة':c==='warn'?'متوسطة':'ضعيفة';
+    const name = e.surah_mismatch
+      ? `<span style="color:var(--bad)">${e.detected_name}</span> <span class="mono">(الملف: ${e.surah_name})</span>`
+      : `${e.surah_name||''} <span class="mono">(${String(e.surah).padStart(3,'0')})</span>`;
+    return `<tr class="${e.failed?'row-failed':''}" ${e.failed?'':`data-s="${e.surah}"`}>
+      <td data-l="السورة">${name}</td>
+      <td data-l="الحالة"><span class="badge ${e.source==='nemo'?'eng':'eng eng-onnx'}">${e.source==='nemo'?'NeMo':'ONNX'}</span> <span class="badge ${c}">${label}</span>${e.surah_mismatch?' <span class="badge bad">اسم خاطئ</span>':''}${(e.extra_surah_names&&e.extra_surah_names.length)?` <span class="badge warn">+ ${e.extra_surah_names.join('، ')}</span>`:''}${e.alternate_source?' <span class="badge alt">مصدر مختلف</span>':''}</td>
+      <td class="mono" data-l="تغطية الكلمات">${e.word_coverage!==undefined?e.word_coverage+'%':'\u2014'}${cmpCell(e)}</td>
+      <td class="mono" data-l="الآيات">${e.ayahs_covered!==undefined?`${e.ayahs_covered} / ${e.total_ayahs}`:'\u2014'}</td>
+      <td class="mono" data-l="فجوة صوتية">${e.gap_pct!==undefined?e.gap_pct+'%':'\u2014'}</td>
+      <td class="mono" data-l="الثقة">${e.avg_confidence!==undefined?(e.avg_confidence*100).toFixed(0)+'%':'\u2014'}</td>
+    </tr>`;
+  }).join('');
+  body.querySelectorAll('tr[data-s]').forEach(tr=>tr.addEventListener('click',()=>{
+    openPlayer(rows.find(e=>String(e.surah)===tr.dataset.s));
+  }));
+}
+['statusFilter','searchBox'].forEach(id=>{
+  const el=document.getElementById(id);
+  el.addEventListener(id==='searchBox'?'input':'change', ()=>{
+    if(currentReciter) renderSurahs();
+  });
+});
+document.getElementById('toReciters').addEventListener('click',()=>{ show('recitersView'); });
+
+/* ---------------- player ---------------- */
+const P = {
+  audio: document.getElementById('audio'),
+  playing: false, raf: null, speeds: [1,1.25,1.5,.75], si: 0,
+  words: [], ayahs: [], autoScrollPaused: false, scrollT: null,
+};
+
+function bindPlayer(){
+  P.audio.addEventListener('play', ()=>{ P.playing=true; document.getElementById('play').textContent='⏸'; loop(); });
+  P.audio.addEventListener('pause',()=>{ P.playing=false; document.getElementById('play').textContent='▶'; if(P.raf)cancelAnimationFrame(P.raf); sync(); });
+  P.audio.addEventListener('loadedmetadata',()=>{ document.getElementById('dur').textContent=fmt(P.audio.duration); });
+  document.getElementById('play').addEventListener('click',()=>{ if(P.audio.src) P.audio.paused?P.audio.play():P.audio.pause(); });
+  document.getElementById('spd').addEventListener('click',()=>{
+    P.si=(P.si+1)%P.speeds.length; P.audio.playbackRate=P.speeds[P.si];
+    document.getElementById('spd').textContent=P.speeds[P.si]+'x';
+  });
+  document.getElementById('pbar').addEventListener('click',e=>{
+    const r=e.currentTarget.getBoundingClientRect();
+    P.audio.currentTime=((e.clientX-r.left)/r.width)*P.audio.duration; if(!P.playing) sync();
+  });
+  const pause=()=>{ P.autoScrollPaused=true; clearTimeout(P.scrollT); P.scrollT=setTimeout(()=>P.autoScrollPaused=false,3000); };
+  const rd=document.getElementById('reader');
+  rd.addEventListener('wheel',pause,{passive:true}); rd.addEventListener('mousedown',pause,{passive:true});
+  document.getElementById('toSurahs').addEventListener('click',()=>{ P.audio.pause(); show('surahsView'); startRefresh(); });
+}
+bindPlayer();
+
+document.getElementById('ayahToggle').addEventListener('click', e => {
+  const list = document.getElementById('ayahList');
+  const open = list.classList.toggle('open');
+  e.currentTarget.setAttribute('aria-expanded', String(open));
+  e.currentTarget.textContent = open ? 'قائمة الآيات ▴' : 'قائمة الآيات ▾';
+});
+
+function seekTo(t){ if(!P.audio.src) return; P.audio.currentTime=t; P.audio.play(); }
+
+async function openPlayer(e){
+  clearInterval(timer);
+  show('playerView');
+  const surah = e.detected_surah || e.surah;
+  document.getElementById('pTitle').textContent = `${e.detected_name || e.surah_name} · ${e.reciter}`;
+  document.getElementById('pMeta').textContent =
+    `تغطية الكلمات ${e.word_coverage}% (${e.words_covered}/${e.total_words}) · ثقة ${(e.avg_confidence*100).toFixed(0)}% · فجوة صوتية ${e.gap_pct}%`;
+  const mm = document.getElementById('pMismatch');
+  if (e.alternate_source){
+    mm.style.display='block';
+    mm.style.background='var(--warn-dim)'; mm.style.color='var(--warn)';
+    mm.style.borderColor='rgba(245,158,11,.3)';
+    mm.innerHTML = `\u26A0 هذه السورة <b>ليست من ختمة القارئ</b>، بل تسجيل منفصل أضيف لسد النقص.
+      ${e.alternate_source_note||''}<br><span style="opacity:.8">${e.alternate_source_url||''}</span>`;
+  } else if (e.extra_surah_names && e.extra_surah_names.length && !e.surah_mismatch){
+    mm.style.display='block';
+    mm.style.background='var(--warn-dim)'; mm.style.color='var(--warn)';
+    mm.style.borderColor='rgba(245,158,11,.3)';
+    mm.innerHTML = `\u2139 هذا الملف يحتوي أيضاً على <b>${e.extra_surah_names.join('، ')}</b> بعد ${e.detected_name}.
+      التوقيتات محفوظة للسورتين في ملف البيانات؛ القارئ أدناه يعرض <b>${e.detected_name}</b>.`;
+  } else if (e.surah_mismatch){
+    mm.style.background=''; mm.style.color=''; mm.style.borderColor='';
+    mm.style.display='block';
+    mm.innerHTML = `⚠ اسم الملف <b>${String(e.surah).padStart(3,'0')} ${e.surah_name}</b> لكن التلاوة فعلياً <b>${e.detected_name}</b>.
+      التوقيتات أدناه محاذاة على <b>${e.detected_name}</b> — الخطأ في تسمية الملف بالمصدر، لا في المحاذاة.`;
+  } else mm.style.display='none';
+
+  P.audio.src = e.audio_url;
+  P.si=0; P.audio.playbackRate=1; document.getElementById('spd').textContent='1x';
+
+  const [canon, timing] = await Promise.all([
+    fetch(`${CANON_BASE}/${String(surah).padStart(3,'0')}.json`).then(r=>r.json()),
+    fetch(e.json_url).then(r=>r.json()),
+  ]);
+
+  // absolute timings keyed by canonical location
+  const times = new Map();
+  (timing.segments||[]).forEach(seg=>{
+    const base = seg.time_from || 0;
+    (seg.words||[]).forEach(w=>{
+      if(!w.location || w.is_missing || w.start==null) return;
+      times.set(w.location, { start: base + w.start, end: base + w.end });
+    });
+  });
+
+  renderReader(canon, times, surah);
+}
+
+function renderReader(canon, times, surah){
+  const reader = document.getElementById('reader');
+  const list = document.getElementById('ayahList');
+  reader.innerHTML=''; list.innerHTML='';
+  P.words=[]; P.ayahs=[];
+
+  const nums = Object.keys(canon.ayahs).map(Number).sort((a,b)=>a-b);
+  nums.forEach(n=>{
+    const words = canon.ayahs[String(n)];
+    const orn = new Set((canon.ornaments && canon.ornaments[String(n)]) || []);
+    const block = document.createElement('div');
+    block.className='ayah-block'; block.id=`ay_${n}`;
+    const num=document.createElement('div'); num.className='num'; num.textContent=`${surah}:${n}`;
+    block.appendChild(num);
+    const tx=document.createElement('div'); tx.className='ayah-text';
+
+    let timed=0; let first=null;
+    words.forEach((word,i)=>{
+      const loc=`${surah}:${n}:${i+1}`;
+      const t=times.get(loc);
+      const isOrn=orn.has(i+1);
+      const sp=document.createElement('span');
+      // ornament: printed in the mushaf, never recited, so it is neither
+      // "timed" nor a miss by the aligner
+      sp.className='w '+(isOrn?'ornament':(t?'timed':'untimed'));
+      sp.id='w_'+loc.replace(/:/g,'_');
+      sp.textContent=word;
+      if(isOrn){
+        /* not counted either way */
+      } else if(t){
+        timed++; if(first===null) first=t.start;
+        sp.addEventListener('click',()=>seekTo(t.start));
+        P.words.push({id:sp.id,start:t.start,end:t.end,ayah:n});
+      } else {
+        sp.title='لم يطابقها المحاذي — النص من مصحف الجماهيرية';
+      }
+      tx.appendChild(sp);
+    });
+    block.appendChild(tx); reader.appendChild(block);
+
+    const recitable = words.length - orn.size;
+    const pct = recitable ? Math.round(100*timed/recitable) : 0;
+    const cls = pct===100?'full':pct>0?'part':'none';
+    P.ayahs.push({n,start:first});
+    const it=document.createElement('div');
+    it.className='ayah-item'; it.id=`ai_${n}`;
+    it.innerHTML=`<div class="t"><span>آية ${n}</span><span class="cov ${cls}">${timed}/${words.length}</span></div>`;
+    if(first!==null) it.addEventListener('click',()=>{
+      seekTo(first);
+      if(window.matchMedia('(max-width: 768px)').matches){
+        const l=document.getElementById('ayahList'); l.classList.remove('open');
+        const b=document.getElementById('ayahToggle');
+        b.setAttribute('aria-expanded','false'); b.textContent='قائمة الآيات ▾';
+      }
+    });
+    list.appendChild(it);
+  });
+  P.words.sort((a,b)=>a.start-b.start);
+}
+
+function loop(){ sync(); if(P.playing) P.raf=requestAnimationFrame(loop); }
+
+function sync(){
+  const t=P.audio.currentTime;
+  document.getElementById('cur').textContent=fmt(t);
+  if(P.audio.duration) document.getElementById('pfill').style.width=(t/P.audio.duration*100)+'%';
+
+  let activeAyah=null, activeEl=null;
+  for(const w of P.words){
+    const el=document.getElementById(w.id); if(!el) continue;
+    if(t>=w.start && t<=w.end){ el.classList.add('on'); activeEl=el; activeAyah=w.ayah; }
+    else el.classList.remove('on');
+  }
+  if(activeAyah===null){
+    let best=null;
+    for(const w of P.words){ if(w.start<=t) best=w.ayah; else break; }
+    activeAyah=best;
+  }
+  document.querySelectorAll('.ayah-block').forEach(b=>b.classList.toggle('active', b.id===`ay_${activeAyah}`));
+  document.querySelectorAll('.ayah-item').forEach(i=>i.classList.remove('active'));
+  const ai=document.getElementById(`ai_${activeAyah}`);
+  if(ai){ ai.classList.add('active'); ai.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+
+  if(activeEl && P.playing && !P.autoScrollPaused){
+    const rd=document.getElementById('reader');
+    const cr=rd.getBoundingClientRect(), wr=activeEl.getBoundingClientRect();
+    const rel=wr.top-cr.top, target=cr.height/3;
+    if(Math.abs(rel-target)>80) rd.scrollBy({top:rel-target,behavior:'smooth'});
+  }
+}
+
+function startRefresh(){ loadManifest(); clearInterval(timer); timer=setInterval(loadManifest,20000); }
+startRefresh();
+</script>
+</body>
+</html>
