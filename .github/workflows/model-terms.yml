@@ -1,0 +1,33 @@
+name: model-terms
+# Fetches a gated model's licence and card with the HF_TOKEN secret, so its terms can be
+# read without the token ever leaving GitHub. Run by hand: Actions → model-terms.
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: Hugging Face model id
+        default: Quran-Lab/zipformer_p-arabic-v3
+permissions:
+  contents: read
+jobs:
+  terms:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Licence and card
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          MODEL: ${{ inputs.model }}
+        run: |
+          mkdir terms
+          for f in LICENSE README.md config.json; do
+            code=$(curl -sL -o "terms/$f" -w '%{http_code}' -H "Authorization: Bearer $HF_TOKEN" \
+              "https://huggingface.co/$MODEL/resolve/main/$f")
+            echo "$f: HTTP $code"
+          done
+          curl -sL -H "Authorization: Bearer $HF_TOKEN" "https://huggingface.co/api/models/$MODEL" \
+            | python3 -c "import json,sys; d=json.load(sys.stdin); print('gated:', d.get('gated'), '| licence:', d.get('cardData',{}).get('license'), d.get('cardData',{}).get('license_name'))"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: model-terms
+          path: terms/
+          retention-days: 3
