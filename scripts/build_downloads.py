@@ -68,7 +68,8 @@ LICENCE = {
             "برواية قالون and keeps that edition's terms (reported: free for non-commercial use; "
             "commercial use needs the Libyan Ministry of Awqaf's permission).",
     "audio": "Not included. Each reciter's audio belongs to its publisher (see source); the "
-             "URLs are where the aligned files are served.",
+             "URLs are where the aligned files are served, and "
+             "https://qalun-timing.abdeljawad.com/audio/ downloads them from there.",
     "model": "Aligned with mohammed/fastconformer-quran-ar (CC BY 4.0) on Hugging Face.",
 }
 

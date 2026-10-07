@@ -21,7 +21,7 @@ for d in /root/qrtt/output_nemo/*/; do
 done
 
 echo "--- [3/5] manifest ---"
-cd /root/qrtt && .venv/bin/python generate_manifest.py
+cd /root/qrtt && python3 generate_manifest.py
 
 echo "--- [4/5] mp3quran on NeMo (7 Qalun reciters, audio never kept) ---"
 /root/nemoenv/bin/python /root/qrtt/stream_align_nemo.py
@@ -33,5 +33,5 @@ for d in /root/qrtt/output_mp3quran_nemo/*/; do
   /root/nemoenv/bin/python /root/qrtt/fill_gaps.py "$d"/[0-9][0-9][0-9].json
 done
 
-cd /root/qrtt && .venv/bin/python generate_manifest.py
+cd /root/qrtt && python3 generate_manifest.py
 echo "=== finish_all DONE $(date -u +%FT%TZ) ==="

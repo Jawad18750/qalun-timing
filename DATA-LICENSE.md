@@ -10,7 +10,9 @@ Credit: «Abdeljawad Almiladi, qalun-timing.abdeljawad.com».
 free for non-commercial use, with commercial use needing the permission of the Libyan
 Ministry of Awqaf. Use the timings with another copy of the text if those terms do not suit.
 
-**The audio** is not included. It belongs to its publishers (listed per reciter in
-`reciters.json`); the URLs say where the aligned files are served.
+**The audio** is not included in the timing archives. It belongs to its publishers (listed
+per reciter in `reciters.json`); the URLs say where the aligned files are served, and the
+site's audio page downloads them from there for listening, study and research with the
+timings. Republishing a recording needs its publisher's permission.
 
 **The model** the timings were produced with, `mohammed/fastconformer-quran-ar`, is CC BY 4.0.

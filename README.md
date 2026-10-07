@@ -12,7 +12,9 @@ are here so others can use them, check them, and help make them better.
 > افتح issue أو pull request.
 
 **Browse:** <https://qalun-timing.abdeljawad.com> (every file, with its audio and the
-reference text side by side) · **Docs:** <https://qalun-timing.abdeljawad.com/docs/>
+reference text side by side) · **Docs:** <https://qalun-timing.abdeljawad.com/docs/> ·
+**Audio:** <https://qalun-timing.abdeljawad.com/audio/> (each recitation by surah, selection
+or whole khatma, with its timings)
 
 ## What is here
 
@@ -38,8 +40,12 @@ From the [latest release](../../releases/latest) (or `releases/latest/download/<
 | `manifest.json` | per-surah numbers: segments, coverage, confidence, gaps, duration |
 | `SHA256SUMS`, `index.json` | checksums; the release's files and date |
 
-The audio is **not** redistributed: `reciters.json` gives the URL of every file that was
-aligned (served by us for the Libyan khatmas, by mp3quran.net for the others).
+The audio is not in these archives. `reciters.json` gives the URL of every file that was
+aligned (served by us for the Libyan khatmas, by mp3quran.net for the others), and the
+[audio page](https://qalun-timing.abdeljawad.com/audio/) downloads them from there: one
+surah, a selection or a whole khatma, optionally with their timings, into a folder
+(Chrome, Edge) or a zip. Its index, `audio/index.json`, lists every file with its size
+(`scripts/build_audio_index.py`).
 
 ## Formats
 

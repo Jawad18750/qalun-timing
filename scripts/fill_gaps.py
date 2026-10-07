@@ -47,7 +47,7 @@ _strip = lambda s: _strip_diacritics(s or "").replace(" ", "")
 
 SR = 16000
 FRAME = 0.08
-VOCAB_PATH = "/root/qrtt/data/onnx/tokens.txt"
+VOCAB_PATH = "/root/qrtt/data/tokens.txt"
 AUDIO_ROOT = Path(os.environ.get("RECITERS_ROOT", "/var/www/quran-audio/audio"))
 MIN_PER_WORD = float(os.environ.get("MIN_PER_WORD", "0.12"))   # s of audio a word needs
 MAX_SPAN = float(os.environ.get("MAX_SPAN", "60.0"))           # refuse huge holes

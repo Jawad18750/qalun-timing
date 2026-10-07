@@ -6,11 +6,9 @@ Reports WORD-level coverage against the canonical Qalun text (not just ayah
 counts): a surah can have every ayah touched while still missing individual
 words, and those missing words are the thing worth reviewing.
 
-Two engines are published side by side. The NeMo rebuild is authoritative where
-it exists and the older ONNX run fills the rest, so the dashboard stays complete
-while the rebuild is still running. Every row also carries the other engine's
-numbers under "alt", because the two disagree in interesting places and the
-better one is not always the same one.
+One engine is published: NeMo. SOURCES can hold more than one, in which case the
+first that has a file wins the row and the others' numbers ride along under "alt"
+for comparison (how the retired ONNX run was compared until 2026-10-07).
 """
 import json
 import re
@@ -18,15 +16,11 @@ import subprocess
 from pathlib import Path
 
 # (name, tree to scan, web subdir) -- order matters: first wins when both exist.
-# The ONNX row reads the deployed tree, not /root/qrtt/output: the mirror is
-# additive, so it still holds the whole finished ONNX corpus, while the source
-# directory was cleared for a re-run and now carries only part of it. Scanning
-# the source would silently drop the surahs that run had not reached yet.
+# The ONNX engine and its timing-data/ tree were retired on 2026-10-07.
 SURAH_INFO_PATH = Path("/root/qrtt/data/surah_info_qalun.json")
 WEB_ROOT = Path("/var/www/qalun-timing/public_html")
 SOURCES = [
     ("nemo", Path("/root/qrtt/output_nemo"), "timing-data-nemo"),
-    ("onnx", WEB_ROOT / "timing-data", "timing-data"),
 ]
 MANIFEST_PATH = WEB_ROOT / "manifest.json"
 AUDIO_BASE = "https://quran-audio.abdeljawad.com/audio"
@@ -189,8 +183,7 @@ def main():
     entries = []
     for key in keys:
         found = [(src, s[key]) for src, s in scanned if key in s]
-        # SOURCES order decides the winner, so NeMo takes the row wherever the
-        # rebuild has reached and ONNX covers everything it has not
+        # SOURCES order decides the winner
         _, primary = found[0]
         entry = dict(primary)
         others = [e for _, e in found[1:]]
