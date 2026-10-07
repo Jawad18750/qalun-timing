@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qalun-timing.abdeljawad.com/schemas/ayahs-surah.schema.json",
+  "title": "Per-ayah timings of one surah (the apps' SurahAyahTimings)",
+  "description": "timings/<reciter>/<NNN>.json, folded from the word alignment by ayah_timings.py: each ayah's first reading in recitation order; missing ayahs bridged from neighbours; spans never overlap. Starts are a median 110 ms late (p95 350 ms) against the audio: the apps seek 350 ms before start_ms (never before the previous ayah's end) and fade in.",
+  "type": "object",
+  "required": [
+    "reciter_id",
+    "surah",
+    "ayahs"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "reciter_id": {
+      "type": "string"
+    },
+    "surah": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 114
+    },
+    "ayahs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "ayah",
+          "start_ms",
+          "end_ms"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "ayah": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "start_ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "≥ start_ms; equal only for an ayah the aligner never heard, bridged between neighbours that touch."
+          }
+        }
+      }
+    }
+  }
+}

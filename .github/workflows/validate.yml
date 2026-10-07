@@ -1,0 +1,67 @@
+name: validate
+on:
+  release:
+    types: [published]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install jsonschema==4.25.1
+      - name: Fold tests
+        run: python -m unittest scripts/test_ayah_timings.py
+      - name: Latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir data && cd data
+          gh release download --repo "$GITHUB_REPOSITORY" -p 'qalun-*.tar.gz' -p 'reciters.json' -p 'manifest.json' -p 'SHA256SUMS'
+          grep -E ' (qalun-.*\.tar\.gz|reciters\.json|manifest\.json)$' SHA256SUMS | sha256sum -c -
+          for f in qalun-*.tar.gz; do tar xzf "$f"; done
+      - name: Every file against its schema
+        run: |
+          python - <<'PY'
+          import glob, json
+          from jsonschema import Draft202012Validator
+          checks = {
+              "words-surah": "data/timing-data-nemo/*/[0-9]*.json",
+              "ayahs-surah": "data/timings/*/[0-9]*.json",
+              "ayahs-compact": "data/timings/*/ayahs.json",
+              "timings-index": "data/timings/index.json",
+              "canon-surah": "data/canon/*.json",
+              "reciters": "data/reciters.json",
+          }
+          bad = 0
+          for name, pattern in checks.items():
+              v = Draft202012Validator(json.load(open(f"schemas/{name}.schema.json")))
+              files = glob.glob(pattern)
+              assert files, pattern
+              for f in files:
+                  for e in v.iter_errors(json.load(open(f))):
+                      bad += 1
+                      print(f"{f}: {list(e.path)[:5]}: {e.message[:200]}")
+              print(f"{name}: {len(files)} files")
+          raise SystemExit(1 if bad else 0)
+          PY
+      - name: The fold reproduces the published ayahs
+        run: |
+          cd data
+          python ../scripts/ayah_timings.py --words timing-data-nemo --canon canon --manifest manifest.json --out refold
+          python - <<'PY'
+          import glob, json, os
+          diff = 0
+          for f in glob.glob("refold/*/ayahs.json"):
+              r = os.path.basename(os.path.dirname(f))
+              a = json.load(open(f))["surahs"]
+              b = json.load(open(f"timings/{r}/ayahs.json"))["surahs"]
+              diff += sum(1 for s in a if a[s] != b.get(s))
+          print("surahs that differ:", diff)
+          raise SystemExit(1 if diff else 0)
+          PY

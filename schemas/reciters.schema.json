@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qalun-timing.abdeljawad.com/schemas/reciters.schema.json",
+  "title": "The reciters in a download",
+  "description": "reciters.json in each release.",
+  "type": "object",
+  "required": [
+    "generated",
+    "licence",
+    "reciters"
+  ],
+  "properties": {
+    "generated": {
+      "type": "string"
+    },
+    "licence": {
+      "type": "object"
+    },
+    "reciters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "surahs"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "riwayah": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Who publishes the audio."
+          },
+          "audio": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "URL template of the aligned audio, {surah:03d} = 001…114."
+          },
+          "surahs": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "word_coverage": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "% of reference words aligned (ornaments excluded)."
+          },
+          "duration_s": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "words": {
+            "type": "string",
+            "description": "The release asset with this reciter's word alignment."
+          },
+          "ayahs": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

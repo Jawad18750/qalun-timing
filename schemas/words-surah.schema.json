@@ -1,0 +1,295 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qalun-timing.abdeljawad.com/schemas/words-surah.schema.json",
+  "title": "Word-level alignment of one surah file",
+  "description": "timing-data-nemo/<reciter>/<NNN>.json. One audio file (normally one surah) of one reciter.",
+  "type": "object",
+  "required": [
+    "reciter",
+    "surah",
+    "detected_surah",
+    "surah_mismatch",
+    "surahs_present",
+    "segments"
+  ],
+  "properties": {
+    "reciter": {
+      "type": "string",
+      "description": "Directory/recitation id. For mp3quran.net reciters this is mp3quran's server slug (trablsi…) inside the file; the directory is the app id (mp3quran_201_199…)."
+    },
+    "reciter_name": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "description": "The audio URL aligned (mp3quran reciters)."
+    },
+    "surah": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 114
+    },
+    "detected_surah": {
+      "type": "integer"
+    },
+    "surah_mismatch": {
+      "type": "boolean"
+    },
+    "surahs_present": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      },
+      "description": "More than one when a file holds two surahs (e.g. 085 = البروج then الطارق)."
+    },
+    "alternate_source": {
+      "type": "boolean",
+      "description": "This surah is a separate recording filling a gap in the reciter's khatma."
+    },
+    "alternate_source_url": {
+      "type": "string"
+    },
+    "alternate_source_note": {
+      "type": "string"
+    },
+    "chunk_window": {
+      "type": "number",
+      "description": "Seconds per recognition window used (10.5 or 20)."
+    },
+    "gap_filled_words": {
+      "type": "integer"
+    },
+    "segments": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/aligned"
+          },
+          {
+            "$ref": "#/$defs/gap"
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "word": {
+      "type": "object",
+      "required": [
+        "word",
+        "location",
+        "start",
+        "end"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "word": {
+          "type": "string",
+          "description": "The word as written in the reference text (مصحف الأوقاف الليبية, رواية قالون)."
+        },
+        "location": {
+          "type": "string",
+          "pattern": "^[0-9]+:[0-9]+:[0-9]+$",
+          "description": "surah:ayah:word, all 1-based, Qalun numbering (6,214 ayahs). Basmala/Isti'adha/Tahmeed words use the sentinel 0:0:N."
+        },
+        "start": {
+          "type": "number",
+          "description": "Seconds, RELATIVE to the segment's time_from. absolute = time_from + start. Quantised to 0.08 s (the model's frame stride)."
+        },
+        "end": {
+          "type": "number",
+          "description": "Seconds, relative to time_from. The last word may run past the segment's time_to: real, do not clamp."
+        }
+      }
+    },
+    "aligned": {
+      "type": "object",
+      "required": [
+        "segment",
+        "time_from",
+        "time_to",
+        "ref_from",
+        "ref_to",
+        "matched_text",
+        "confidence",
+        "has_missing_words",
+        "has_repeated_words",
+        "special_type",
+        "error",
+        "words"
+      ],
+      "properties": {
+        "time_from": {
+          "type": "number",
+          "description": "Absolute seconds into the audio file."
+        },
+        "time_to": {
+          "type": "number",
+          "description": "Absolute seconds into the audio file."
+        },
+        "ref_from": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^$|^[0-9]+:[0-9]+:[0-9]+$",
+          "description": "surah:ayah:word, or \"\" / null when the segment is not Quran text."
+        },
+        "ref_to": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^$|^[0-9]+:[0-9]+:[0-9]+$",
+          "description": "surah:ayah:word, or \"\" / null when the segment is not Quran text."
+        },
+        "matched_text": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "words": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/word"
+          },
+          "description": "May be empty: the segment is placed on text the aligner had already used up."
+        },
+        "segment": {
+          "type": "integer",
+          "description": "1-based order of the segment in the file."
+        },
+        "has_missing_words": {
+          "type": "boolean"
+        },
+        "has_repeated_words": {
+          "type": "boolean"
+        },
+        "special_type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            null,
+            "Basmala",
+            "Isti'adha",
+            "Tahmeed"
+          ]
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "e.g. \"Low confidence (0%)\" or \"Dropped: isolated match on surah N …\"."
+        },
+        "likely_opening": {
+          "type": "boolean"
+        },
+        "wrap_word_ranges": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "repeated_ranges": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": "Ranges the reciter read again (takrar), as [from, to] locations."
+        },
+        "repeated_text": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "gap": {
+      "type": "object",
+      "required": [
+        "time_from",
+        "time_to",
+        "ref_from",
+        "ref_to",
+        "matched_text",
+        "confidence",
+        "filled_gap",
+        "fill_check",
+        "fill_offset",
+        "words"
+      ],
+      "description": "A segment added by the gap filler (fill_gaps.py) for words the first pass missed. NOTE: it has no segment, has_missing_words, has_repeated_words, special_type or error keys.",
+      "properties": {
+        "time_from": {
+          "type": "number",
+          "description": "Absolute seconds into the audio file."
+        },
+        "time_to": {
+          "type": "number",
+          "description": "Absolute seconds into the audio file."
+        },
+        "ref_from": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^$|^[0-9]+:[0-9]+:[0-9]+$",
+          "description": "surah:ayah:word, or \"\" / null when the segment is not Quran text."
+        },
+        "ref_to": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^$|^[0-9]+:[0-9]+:[0-9]+$",
+          "description": "surah:ayah:word, or \"\" / null when the segment is not Quran text."
+        },
+        "matched_text": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "words": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/word"
+          },
+          "description": "May be empty: the segment is placed on text the aligner had already used up."
+        },
+        "filled_gap": {
+          "const": true
+        },
+        "fill_check": {
+          "enum": [
+            "verified",
+            "unverified"
+          ],
+          "description": "verified: the filled words were confirmed by a second recognition of that stretch."
+        },
+        "fill_offset": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

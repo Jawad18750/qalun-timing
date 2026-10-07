@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qalun-timing.abdeljawad.com/schemas/ayahs-compact.schema.json",
+  "title": "Per-ayah timings of every surah of one reciter, compact",
+  "description": "timings/<reciter>/ayahs.json: what the apps bundle. Same values as the per-surah files.",
+  "type": "object",
+  "required": [
+    "reciter_id",
+    "version",
+    "generated",
+    "surahs"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "reciter_id": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "generated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Also the bundle revision the apps compare to re-sync their copies."
+    },
+    "surahs": {
+      "type": "object",
+      "patternProperties": {
+        "^[0-9]{1,3}$": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "integer",
+                "description": "ayah"
+              },
+              {
+                "type": "integer",
+                "description": "start_ms"
+              },
+              {
+                "type": "integer",
+                "description": "end_ms"
+              }
+            ],
+            "minItems": 3,
+            "maxItems": 3
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

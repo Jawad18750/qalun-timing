@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qalun-timing.abdeljawad.com/schemas/canon-surah.schema.json",
+  "title": "Reference text of one surah",
+  "description": "canon/<NNN>.json: مصحف الأوقاف الليبية برواية قالون, the text every location points into. Word k of ayah a is ayahs[a][k-1].",
+  "type": "object",
+  "required": [
+    "surah",
+    "name",
+    "ayahs"
+  ],
+  "properties": {
+    "surah": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "ayahs": {
+      "type": "object",
+      "patternProperties": {
+        "^[0-9]+$": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ornaments": {
+      "type": "object",
+      "description": "ayah → 1-based word positions that are ornaments (۞ and the like): in the text, never recited, not counted in coverage.",
+      "patternProperties": {
+        "^[0-9]+$": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}

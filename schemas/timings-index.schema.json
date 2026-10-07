@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qalun-timing.abdeljawad.com/schemas/timings-index.schema.json",
+  "title": "Which surahs each reciter has per-ayah timings for",
+  "description": "timings/index.json",
+  "type": "object",
+  "required": [
+    "version",
+    "generated",
+    "reciters"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer"
+    },
+    "generated": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "reciters": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "surahs"
+        ],
+        "properties": {
+          "surahs": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "bridged_ayahs": {
+            "type": "integer"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
