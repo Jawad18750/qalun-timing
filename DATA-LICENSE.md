@@ -16,3 +16,9 @@ site's audio page downloads them from there for listening, study and research wi
 timings. Republishing a recording needs its publisher's permission.
 
 **The model** the timings were produced with, `mohammed/fastconformer-quran-ar`, is CC BY 4.0.
+
+**Experimental Zipformer timings**, if and when published, are a separate dataset under the
+[Quran-Lab No-Profit License 1.2](https://huggingface.co/Quran-Lab/zipformer_p-arabic-v3)
+that their model requires of anything made with it, not under CC BY 4.0. They will carry
+that licence file and an `experimental` label, and never replace the files above without
+a published comparison. See [docs/ROADMAP.md](docs/ROADMAP.md).

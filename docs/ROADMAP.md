@@ -13,9 +13,21 @@ Moving the corpus to it needs:
    numbering, in ayah boundaries and in letters (مالك/ملك, the split last ayah of
    الفاتحة …); our `qpc_qalun.json` / `surah_info_qalun.json` are the starting point, and
    its phonetizer already supports Qalun's madd and yaa settings.
-2. **The model's terms.** It is access-restricted on Hugging Face under its own licence;
-   the timings published here are CC BY 4.0, so the terms of anything produced from the
-   model have to allow that.
+2. **The model's terms (read 2026-10-07).** Access is granted by hand on Hugging Face
+   under the Quran-Lab No-Profit License 1.2 (NPL-1.2). What it means here:
+   - Anything produced with the model, timings included, is a "Derivative" and has to be
+     published under NPL-1.2 itself, with no other terms (section 7). Zipformer timings
+     can therefore never join the CC BY 4.0 data; they go out on their own, marked
+     experimental, under NPL-1.2, until a comparison says they are better.
+   - Nothing built on them may be charged for, placed behind a payment, or carry
+     advertising (sections 3 and 9). The apps that use these timings are free and carry
+     no advertising.
+   - No attribution is owed, but the LICENSE file travels with every copy (section 6).
+   - Access was also given on three conditions: never charge for it, never present its
+     output as an authoritative ruling on anyone's recitation, and say in any application
+     that automatic tajweed feedback can be wrong and does not replace a teacher.
+   - It recognises **Hafs** phonemes (its reference phonemises the 6,236 Hafs ayahs), so
+     point 1 is a Qalun phonemisation of our text, not a lookup.
 3. **Keeping what the apps rely on**: the same JSON formats (letters as an addition),
    the Qalun numbering, and a fresh measurement of onset latency before the apps' 350 ms
    lead-in is changed or dropped.
@@ -29,7 +41,7 @@ fetches the audio from the URLs in `reciters.json`, runs the aligner, and upload
 JSON as an artifact; a final job validates it against `schemas/`, folds the ayahs and
 attaches everything to a release. The server only downloads the release.
 
-It is blocked on the two points above (the reference and the model's terms), not on CPU.
+It is blocked on the Qalun reference (point 1), not on CPU; the terms are settled above.
 
 ## A hand-timed evaluation set
 
